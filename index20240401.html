@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1 id="title" style="background-color: darkorange;">사용자 입력 실습</h1>
+    <hr>
+    <form action="" method="get">
+
+        <label for="idinput">아이디입력</label> 
+        <input type="text" id="idinput">
+        <br>
+
+        <label for="pw">패스워드</label>    <!--for="pw"의 기능 : 패스워드 글자만 입력해도 글자칸이 선택된다.-->
+        <input type="password" name="" id="pw">
+        <br>
+
+        <label for="chx">체크박스</label>
+        남자<input type="checkbox" name="" id="">
+        여자<input type="checkbox" name="" id="">
+        <br>
+
+        <!-- h1 클릭했을 때 배경색상 변경 -->
+        <label for="btn1">버튼</label>
+        <input type="button" value="눌러보세요" onclick="document.getElementById('title').style.backgroundColor='yellow'"> 
+        <!--getElementById : Id를 통해서 요소를 얻는 것, title아이디를 통해서, 쉽게말해 지정해준것이다. -->  
+        <!--value를 통해서 눌러보세요 버튼 생성
+            document : ppt의 슬라이드, excel의 Sheet, browser에서의 사용자에게 보여지는 하나하나의 객체가 document이다. 즉 자료의 단위라고 할 수 있다.-->
+        <br>
+        
+        <label for="email">이메일</label>
+        <input type="email" name="" id="email" required>
+        <br>
+        
+        <label for="rd1">라디오버튼</label>
+        <input type="radio" name="" id="rd1" required>
+        <br>
+        
+        <label for="month">달력표시</label>
+        <input type="month" name="" id="month" required>
+        <br>
+
+        <label for="range">범위선택</label>
+        <input type="range" name="" id="range" required>
+        <br>
+
+        <label for="time">시간선택</label>
+        <input type="time" name="" id="time" required>
+        <br>
+
+        <label for="color">색상선택</label>
+        <input type="color" name="" id="color" required>
+        <br>
+
+        <label for="textarea">장문글쓰기</label>
+        <textarea name="" id="" cols="30" rows="10">장문글쓰기</textarea>
+        <br>
+
+
+
+    </form> 
+    
+    <!--인터넷에 어떤 값을 입력하는 경우 1. 저장, 2. 검색-->
+    <!-- for만 쓰면 나타나는 선택지 ex) form, form:get form:post등은 http의 일종이다. -->
+    <!-- form:get은 인터넷에서 받는것, form:post는 인터넷에 올리는것을 의미한다.  -->
+</body>
+</html>
