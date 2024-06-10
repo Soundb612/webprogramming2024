@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<body>
+<!-- 1번 실습 -->
+<button onclick="document.getElementById('lightb').src='light-bulb1.png'">
+		전등켜기스위치</button>
+        <!-- do~Id는 브라우저에서 출력되는 배경(기본)을 지정한다. -->
+<button onclick="document.getElementById('lightb').src='light-bulb2.png'">
+		전등끄기스위치</button>
+
+<img id="lightb" src="light-bulb2.png" style="width:120px">
+
+<!-- 2번 실습 -->
+    <p>마우스를 이미지 위로 올리면 이미지가 커집니다.</p>
+    <img onmouseover="this.style.width='200px'" onmouseout="this.style.width='100px'" 
+        src="light-bulb1.png" width="100px">
+        <!-- 자기 자신을 식별하기 위해서 this가 사용된다. -->
+
+<!-- 3번 실습 -->
+<script>
+        let s = "Hello World";
+        let t = "How are you" + " today?";
+        document.write("<br>"+s+"<br>");  // br 즉 줄바꿈이 된다. 
+        document.write(t+"<br>");
+        document.write(s.toUpperCase()+"<br>");
+        let num = prompt("숫자를 입력하세요.")
+        let num1 = prompt("숫자를 입력하세요.")
+        document.write(Number(num) + Number(num1))
+    </script>
+    
+</body>
+</html>
