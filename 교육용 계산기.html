@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<title>교육용 계산기</title>
+
+<style>
+*{
+    box-sizing: border-box;
+    padding: 0;
+}
+.button {
+padding: 10px;
+width: 50px;
+height: 50px;
+border-radius: 40px;
+background-color: rgb(29, 29, 29);
+font-size: larger;
+color: white;
+}   
+
+table{
+    background-color: rgb(177, 177, 177);
+    
+}
+div{
+    /* 전체 요소에 가운데 정렬, 테두리 성정, 배경 색, 안쪽 공백을 적용하여 스타일링 합니다.  */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    border: solid 2px;
+    border-radius: 10px;
+    background-color: rgb(177, 177, 177);
+    padding: 10px;
+}
+.textit{
+    background-color: rgb(177, 177, 177);
+}
+
+#number{
+    width: 131px;
+    font-size: 15px;
+}
+#checkit{
+    width: 80px;
+    font-size: 15px;
+}
+#yours{
+    width: 131px;
+    font-size: 15px;
+}
+#zero{
+    width: 105px;
+}
+#answer{
+    width: 80px;
+    font-size: 15px;
+}
+
+</style>
+
+<script>
+function cal() {
+    // 계산을 하여 answer부분에 넘기기
+    document.getElementById("answer").value = eval(document.getElementById("number").value)
+}
+
+function nine(){
+    document.getElementById("number").value += parseInt(document.getElementById("9").value)
+}
+
+function eight(){
+    document.getElementById("number").value += parseInt(document.getElementById("8").value)
+}
+
+function seven(){
+    document.getElementById("number").value += parseInt(document.getElementById("7").value)
+}
+
+function six(){
+    document.getElementById("number").value += parseInt(document.getElementById("6").value)
+}
+
+function five(){
+    document.getElementById("number").value += parseInt(document.getElementById("5").value)
+}
+
+function four(){
+    document.getElementById("number").value += parseInt(document.getElementById("4").value)
+}
+
+function three(){
+    document.getElementById("number").value += parseInt(document.getElementById("3").value)
+}
+
+function two(){
+    document.getElementById("number").value += parseInt(document.getElementById("2").value)
+}
+
+function one(){
+    document.getElementById("number").value += parseInt(document.getElementById("1").value)
+}
+
+function zero(){
+    document.getElementById("number").value += "0"
+}
+
+function plus(){
+    document.getElementById("number").value += document.getElementById("+").value
+}
+
+function minor(){
+    document.getElementById("number").value += document.getElementById("-").value
+}
+
+function x(){
+    document.getElementById("number").value += document.getElementById("*").value
+}
+
+function dup(){
+    document.getElementById("number").value += document.getElementById("/").value
+}
+
+function clearit(){
+    // 수식, 답, 결과예축 부분에 텍스트를 초기화 합니다. 
+    document.getElementById("number").value = "";
+    document.getElementById("answer").value = "";
+    document.getElementById("yours").value = "";
+}
+
+function appendit(){
+    document.getElementById("number").value += document.getElementById("point").value
+}
+
+function edu(){
+    if(eval(document.getElementById("number").value) == parseFloat(document.getElementById("yours").value)) {
+        alert("correct!")
+    }
+    else {
+        alert("try again")
+    }
+}
+
+</script>
+<body> 
+<div>
+    <!-- 계산기에 위해 해당하는 부분 -->
+<input type=text id="number" value="수식을 입력하세요" class="textit">
+<input type=text id="answer" value="답" class="textit"><br>
+<input type=text id="yours" value="답을 써보세요" class="textit">
+<input type="button" onclick="edu()" id="checkit" value="확인" class="textit"><br><br>
+<table>
+    <!-- 계산기에 하부 부분에 해당하는 부분 -->
+
+    <tr>
+        <td><input type=button value="+" id="+" onClick="plus()" class="button"></td>
+        <td><input type=button value="-" id="-" onclick="minor()" class="button"></td>
+        <td><input type=button value="*" id="*" onclick="x()" class="button"></td>
+        <td><input type=button value="/" id="/" onclick="dup()" class="button"></td>
+        
+    </tr>
+    <tr>
+        <td><input type=button value="7" id="7" onClick="seven()" class="button"></td>
+        <td><input type=button value="8" id="8" onClick="eight()" class="button"></td>
+        <td><input type=button value="9" id="9" onClick="nine()" class="button"></td>
+        <td><input type="button" value="=" id="result" onclick="cal()" class="button"></td>
+    </tr>
+    <tr>
+        <td><input type=button value="4" id="4" onClick="four()" class="button"></td>
+        <td><input type=button value="5" id="5" onClick="five()" class="button"></td>
+        <td><input type=button value="6" id="6" onClick="six()" class="button"></td>
+        <td><input type="button" value="C" onClick="clearit()" class="button"></td>
+        
+    </tr>
+    <tr>
+        <td><input type=button value="1" id="1" onClick="one()" class="button"></td>
+        <td><input type=button value="2" id="2" onClick="two()" class="button"></td>
+        <td><input type=button value="3" id="3" onClick="three()" class="button"></td>
+        <td><input type=button value="." id="point" onClick="appendit()" class="button"></td>
+    </tr>
+    <tr>
+        <td><input type="button" class="button"></td>
+        <td colspan="2"><input type=button value="0" id="zero" onClick="zero()" class="button" style="width: 112px;"></td>
+        <td><input type="button" class="button"></td>
+    </tr>
+</table>
+</div>
+</body>
+</html>
