@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <style>
+        * {
+            text-align: center;
+        }
+
+        body {
+            background-color: #f0f8ff; /* 배경색 */
+            font-family: Arial, sans-serif; /* 폰트 설정 */
+        }
+
+        #board {
+            margin-left: auto;
+            margin-right: auto;
+            border-collapse: collapse; /* 테이블 경계 설정 */
+        }
+
+        #board tr td {
+            border: 1px solid white; /* 칸의 테두리 색상 */
+            background: #34da79; /* 기본 칸 색상 */
+            width: 30px; /* 칸 너비 */
+            height: 30px; /* 칸 높이 */
+            text-align: center;
+            cursor: pointer; /* 마우스 포인터 변경 */
+        }
+
+        #board tr td.clicked {
+            background: #6c5ee7; /* 클릭한 칸 색상 */
+        }
+
+        #board tr td.mine {
+            background: #FF0000; /* 일반 지뢰 칸 색상 */
+        }
+
+        #board tr td.trap {
+            background: #800080; /* 함정지뢰 칸 색상 (보라색) */
+        }
+
+        #timer {
+            font-size: 20px; /* 타이머 글씨 크기 */
+            margin-top: 20px; /* 타이머 위 여백 */
+        }
+    </style>
+</head>
+
+<body>
+    <h1>지뢰찾기</h1>
+    <div id="timer">남은 시간: <span id="time">600</span>초</div>
+    <table id="board"></table>
+    <button onclick="genGrid();">새로운 게임</button>
+    <script>
+        let grid = document.getElementById("board");
+        let timerElement = document.getElementById("time");
+        let timeLimit = 600; // 10분 제한 시간 (600초)
+        let interval; // 타이머 인터벌
+        let firstClick = true; // 첫 클릭 여부
+        let totalSafeCells; // 안전한 칸의 총 수
+        let clickedSafeCells = 0; // 클릭한 안전한 칸의 수
+
+        genGrid(); // 초기 게임 생성
+
+        function genGrid() {
+            clearInterval(interval); // 이전 타이머 중지
+            timerElement.innerText = timeLimit; // 타이머 초기화
+            startTimer(); // 타이머 시작
+
+            grid.innerHTML = ""; // 기존 게임판 초기화
+            let mines = Array(10).fill().map(() => Array(10).fill(false)); // 10x10 배열 초기화
+
+            // 지뢰 배치
+            for (let i = 0; i < 10; i++) { // 지뢰 수
+                let x, y;
+                do {
+                    x = Math.floor(Math.random() * 10);
+                    y = Math.floor(Math.random() * 10);
+                } while (mines[x][y]); // 이미 지뢰가 있는 위치는 제외
+                mines[x][y] = true; // 지뢰 위치 설정
+            }
+
+            // 함정지뢰 배치 (2개로 제한)
+            for (let i = 0; i < 2; i++) { // 함정지뢰 수
+                let x, y;
+                do {
+                    x = Math.floor(Math.random() * 10);
+                    y = Math.floor(Math.random() * 10);
+                } while (mines[x][y] === true || mines[x][y] === "trap"); // 일반 지뢰와 겹치지 않도록 설정
+                mines[x][y] = "trap"; // 함정지뢰 위치 설정
+            }
+
+            totalSafeCells = 100 - (10 + 2); // 총 안전한 칸 수 계산
+
+            // 게임판 생성
+            for (let i = 0; i < 10; i++) {
+                let row = grid.insertRow(i);
+                for (let j = 0; j < 10; j++) {
+                    let cell = row.insertCell(j);
+                    cell.onclick = function () { clickBox(this, mines); }; // 클릭 이벤트
+                    cell.oncontextmenu = function (e) { e.preventDefault(); flagCell(this); }; // 우클릭 이벤트
+                    cell.setAttribute("mine", mines[i][j] ? (mines[i][j] === "trap" ? "trap" : "true") : "false"); // 칸에 지뢰 속성 설정
+                }
+            }
+        }
+
+        function clickBox(cell, mines) {
+            if (firstClick) {
+                // 첫 클릭일 경우 안전하게 지뢰를 재배치
+                firstClick = false;
+                resetMines(cell, mines);
+            }
+
+            if (cell.getAttribute("mine") === "true") {
+                cell.className = "mine"; // 일반 지뢰 클릭
+                clearInterval(interval); // 타이머 중지
+                alert("게임이 종료되었습니다. 지뢰를 클릭했습니다."); // 종료 메시지
+            } else if (cell.getAttribute("mine") === "trap") {
+                cell.className = "trap"; // 함정지뢰 클릭
+                alert("함정 지뢰에 걸렸습니다!"); // 함정 메시지
+            } else {
+                cell.className = "clicked"; // 안전한 칸 클릭
+                clickedSafeCells++; // 클릭한 안전한 칸 수 증가
+
+                // 주변 지뢰 수 계산
+                let mineCount = countMines(cell, mines);
+                if (mineCount > 0) {
+                    cell.innerText = mineCount; // 주변 지뢰 수 표시
+                } else {
+                    // 주변에 지뢰가 없을 경우 연쇄적으로 열기
+                    openAdjacentCells(cell, mines);
+                }
+            }
+            checkVictory(); // 승리 조건 확인
+        }
+
+        function flagCell(cell) {
+            if (!cell.classList.contains('clicked')) {
+                cell.classList.toggle('flag'); // 깃발 표시 전환
+                cell.innerText = cell.classList.contains('flag') ? '🚩' : ''; // 깃발 이모지 표시
+            }
+        }
+
+        function resetMines(firstCell, mines) {
+            // 첫 클릭 후 안전하게 지뢰 재배치
+            let x = firstCell.parentNode.rowIndex;
+            let y = firstCell.cellIndex;
+
+            // 첫 클릭 위치 주변 지뢰 제거
+            for (let i = -1; i <= 1; i++) {
+                for (let j = -1; j <= 1; j++) {
+                    if (x + i >= 0 && x + i < 10 && y + j >= 0 && y + j < 10) {
+                        mines[x + i][y + j] = false; // 첫 클릭 주변의 지뢰 제거
+                    }
+                }
+            }
+
+            // 새로운 지뢰 배치
+            for (let i = 0; i < 10; i++) {
+                let newX, newY;
+                do {
+                    newX = Math.floor(Math.random() * 10);
+                    newY = Math.floor(Math.random() * 10);
+                } while (mines[newX][newY] === true || mines[newX][newY] === "trap"); // 이미 지뢰가 있는 위치는 제외
+                mines[newX][newY] = true; // 새로운 지뢰 위치 설정
+            }
+        }
+
+        function openAdjacentCells(cell, mines) {
+            let x = cell.parentNode.rowIndex; // 현재 클릭한 칸의 행 인덱스
+            let y = cell.cellIndex; // 현재 클릭한 칸의 열 인덱스
+
+            // 주변 8칸 검사
+            for (let i = -1; i <= 1; i++) {
+                for (let j = -1; j <= 1; j++) {
+                    if (i === 0 && j === 0) continue; // 자기 자신은 제외
+                    let newX = x + i, newY = y + j;
+                    if (newX >= 0 && newX < 10 && newY >= 0 && newY < 10) {
+                        let adjacentCell = grid.rows[newX].cells[newY];
+                        if (!adjacentCell.classList.contains('clicked')) {
+                            clickBox(adjacentCell, mines); // 재귀적으로 클릭
+                        }
+                    }
+                }
+            }
+        }
+
+        function countMines(cell, mines) {
+            let x = cell.parentNode.rowIndex; // 현재 클릭한 칸의 행 인덱스
+            let y = cell.cellIndex; // 현재 클릭한 칸의 열 인덱스
+            let count = 0;
+
+            // 주변 8칸 검사
+            for (let i = -1; i <= 1; i++) {
+                for (let j = -1; j <= 1; j++) {
+                    if (i === 0 && j === 0) continue; // 자기 자신은 제외
+                    let newX = x + i, newY = y + j;
+                    if (newX >= 0 && newX < 10 && newY >= 0 && newY < 10) {
+                        if (mines[newX][newY] === true) {
+                            count++;
+                        }
+                    }
+                }
+            }
+            return count; // 주변 지뢰 수
+        }
+
+        function checkVictory() {
+            if (clickedSafeCells === totalSafeCells) {
+                clearInterval(interval); // 타이머 중지
+                alert("축하합니다! 모든 안전한 칸을 찾았습니다!"); // 승리 메시지
+            }
+        }
+
+        function startTimer() {
+            interval = setInterval(function () {
+                timeLimit--;
+                timerElement.innerText = timeLimit; // 남은 시간 업데이트
+                if (timeLimit <= 0) {
+                    clearInterval(interval); // 타이머 중지
+                    alert("시간이 초과되었습니다. 게임 종료."); // 시간 초과 메시지
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+
+</html>
