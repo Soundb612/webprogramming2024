@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <style>
+        * {
+            text-align: center;
+        }
+
+        body {
+            background-color: #f0f8ff;
+            font-family: Arial, sans-serif;
+        }
+
+        #board {
+            margin-left: auto;
+            margin-right: auto;
+            border-collapse: collapse;
+        }
+
+        #board tr td {
+            border: 1px solid white;
+            background: #34da79;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        #board tr td.clicked {
+            background: #6c5ee7;
+        }
+
+        #board tr td.mine {
+            background: #FF0000;
+        }
+
+        #board tr td.trap {
+            background: #800080;
+        }
+
+        #timer {
+            font-size: 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>지뢰찾기</h1>
+    <div id="timer">남은 시간: <span id="time">600</span>초</div>
+    <table id="board"></table>
+    <button onclick="genGrid();">새로운 게임</button>
+    <script>
+        let grid = document.getElementById("board");
+        let timerElement = document.getElementById("time");
+        let timeLimit = 600;
+        let interval;
+        let firstClick = true;
+        let totalSafeCells;
+        let clickedSafeCells = 0;
+
+        genGrid();
+
+        function genGrid() {
+            clearInterval(interval);
+            timerElement.innerText = timeLimit;
+            startTimer();
+
+            grid.innerHTML = "";
+            let mines = Array(10).fill().map(() => Array(10).fill(false));
+
+            // 지뢰 배치
+            for (let i = 0; i < 10; i++) {
+                let x, y;
+                do {
+                    x = Math.floor(Math.random() * 10);
+                    y = Math.floor(Math.random() * 10);
+                } while (mines[x][y]);
+                mines[x][y] = true;
+            }
+
+            // 함정지뢰 배치 (2개로 제한)
+            for (let i = 0; i < 2; i++) {
+                let x, y;
+                do {
+                    x = Math.floor(Math.random() * 10);
+                    y = Math.floor(Math.random() * 10);
+                } while (mines[x][y] === true || mines[x][y] === "trap");
+                mines[x][y] = "trap";
+            }
+
+            totalSafeCells = 100 - (10 + 2);
+
+            for (let i = 0; i < 10; i++) {
+                let row = grid.insertRow(i);
+                for (let j = 0; j < 10; j++) {
+                    let cell = row.insertCell(j);
+                    cell.onclick = function () { clickBox(this, mines); };
+                    cell.oncontextmenu = function (e) { e.preventDefault(); flagCell(this); };
+                    cell.setAttribute("mine", mines[i][j] ? (mines[i][j] === "trap" ? "trap" : "true") : "false");
+                }
+            }
+        }
+
+        function clickBox(cell, mines) {
+            if (firstClick) {
+                firstClick = false;
+                resetMines(cell, mines);
+            }
+
+            if (cell.classList.contains('clicked')) {
+                return;
+            }
+
+            if (cell.getAttribute("mine") === "true") {
+                cell.className = "mine";
+                clearInterval(interval);
+                alert("게임이 종료되었습니다. 지뢰를 클릭했습니다.");
+            } else if (cell.getAttribute("mine") === "trap") {
+                cell.className = "trap";
+                clearInterval(interval);
+                alert("게임이 종료되었습니다. 함정 지뢰를 클릭했습니다!");
+            } else {
+                cell.className = "clicked";
+                clickedSafeCells++;
+
+                let mineCount = countMines(cell, mines);
+                if (mineCount > 0) {
+                    cell.innerText = mineCount;
+                } else {
+                    openAdjacentCells(cell, mines);
+                }
+            }
+            checkVictory();
+        }
+
+        function flagCell(cell) {
+            if (!cell.classList.contains('clicked')) {
+                cell.classList.toggle('flag');
+                cell.innerText = cell.classList.contains('flag') ? '🚩' : '';
+            }
+        }
+
+        function resetMines(firstCell, mines) {
+            let x = firstCell.parentNode.rowIndex;
+            let y = firstCell.cellIndex;
+
+            for (let i = -1; i <= 1; i++) {
+                for (let j = -1; j <= 1; j++) {
+                    if (x + i >= 0 && x + i < 10 && y + j >= 0 && y + j < 10) {
+                        mines[x + i][y + j] = false;
+                    }
+                }
+            }
+
+            for (let i = 0; i < 10; i++) {
+                let newX, newY;
+                do {
+                    newX = Math.floor(Math.random() * 10);
+                    newY = Math.floor(Math.random() * 10);
+                } while (mines[newX][newY] === true || mines[newX][newY] === "trap");
+                mines[newX][newY] = true;
+            }
+        }
+
+        function openAdjacentCells(cell, mines) {
+            let x = cell.parentNode.rowIndex;
+            let y = cell.cellIndex;
+
+            for (let i = -1; i <= 1; i++) {
+                for (let j = -1; j <= 1; j++) {
+                    if (i === 0 && j === 0) continue;
+                    let newX = x + i, newY = y + j;
+                    if (newX >= 0 && newX < 10 && newY >= 0 && newY < 10) {
+                        let adjacentCell = grid.rows[newX].cells[newY];
+                        if (!adjacentCell.classList.contains('clicked')) {
+                            clickBox(adjacentCell, mines);
+                        }
+                    }
+                }
+            }
+        }
+
+        function countMines(cell, mines) {
+            let x = cell.parentNode.rowIndex;
+            let y = cell.cellIndex;
+            let count = 0;
+
+            for (let i = -1; i <= 1; i++) {
+                for (let j = -1; j <= 1; j++) {
+                    if (i === 0 && j === 0) continue;
+                    let newX = x + i, newY = y + j;
+                    if (newX >= 0 && newX < 10 && newY >= 0 && newY < 10) {
+                        if (mines[newX][newY] === true) {
+                            count++;
+                        }
+                    }
+                }
+            }
+            return count;
+        }
+
+        function checkVictory() {
+            if (clickedSafeCells === totalSafeCells) {
+                clearInterval(interval);
+                alert("축하합니다! 모든 안전한 칸을 클릭했습니다.");
+            }
+        }
+
+        function startTimer() {
+            let timeLeft = timeLimit;
+            interval = setInterval(function () {
+                timeLeft--;
+                timerElement.innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(interval);
+                    alert("시간이 초과되었습니다. 게임이 종료됩니다.");
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+
+</html>
